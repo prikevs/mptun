@@ -279,16 +279,21 @@ static int
 tun_alloc(char *dev) {
 	struct ifreq ifr;
 	int fd, err;
+	char *clonedev = "/dev/net/tun";
+	int flags = 0 | IFF_TAP;
 
-	if( (fd = open("/dev/net/tun", O_RDWR)) < 0 ) {
+	if( (fd = open(clonedev, O_RDWR)) < 0 ) {
 		perror("Opening /dev/net/tun");
 		return fd;
 	}
 
 	memset(&ifr, 0, sizeof(ifr));
 
-	ifr.ifr_flags = IFF_TUN | IFF_NO_PI;
-	strncpy(ifr.ifr_name, dev, IFNAMSIZ);
+	ifr.ifr_flags = flags;
+
+	if (*dev) {
+		strncpy(ifr.ifr_name, dev, IFNAMSIZ);
+	}
 
 	if( (err = ioctl(fd, TUNSETIFF, (void *)&ifr)) < 0 ) {
 		perror("ioctl(TUNSETIFF)");
